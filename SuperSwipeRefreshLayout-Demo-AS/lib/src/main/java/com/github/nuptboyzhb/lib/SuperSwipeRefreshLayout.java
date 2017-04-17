@@ -669,6 +669,16 @@ public class SuperSwipeRefreshLayout extends ViewGroup {
                 if (y == -1) {
                     return false;
                 }
+                
+                
+                 //by lichaomeng 为了在水平滑动中禁止自身滑动,交给子类处理,如ListView中的条目侧滑菜单的展示
+                float gap = startx - ev.getRawX();
+                if (Math.abs(gap) > 20 || Math.abs(getScrollX()) > 20) {
+                   return false;
+
+                }
+                
+                
                 float yDiff = 0;
                 if (isChildScrollToBottom()) {
                     yDiff = mInitialMotionY - y;// 计算上拉距离
