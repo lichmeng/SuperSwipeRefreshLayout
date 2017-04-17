@@ -629,6 +629,9 @@ public class SuperSwipeRefreshLayout extends ViewGroup {
      * 如果拦截，则交给自己的OnTouchEvent处理<br>
      * 否者，交给子View处理<br>
      */
+    
+    int startx;//记录按下的点
+    boolean Xscrolled = false;//记录已经横向滑动了,,防止横滑>竖滑>横滑回来,刷新界面突然蹦出来,
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         ensureTarget();
@@ -648,6 +651,8 @@ public class SuperSwipeRefreshLayout extends ViewGroup {
         // 下拉刷新判断
         switch (action) {
             case MotionEvent.ACTION_DOWN:
+                //add by lichaomeng
+                Xscrolled = false;
                 setTargetOffsetTopAndBottom(
                         mOriginalOffsetTop - mHeadViewContainer.getTop(), true);// 恢复HeaderView的初始位置
                 mActivePointerId = MotionEventCompat.getPointerId(ev, 0);
@@ -657,8 +662,16 @@ public class SuperSwipeRefreshLayout extends ViewGroup {
                     return false;
                 }
                 mInitialMotionY = initialMotionY;// 记录按下的位置
+                
+                startx = (int) ev.getRawX();
 
             case MotionEvent.ACTION_MOVE:
+                
+                 //add by lichaomeng
+                if (Xscrolled) {
+                    return false;
+                }
+                
                 if (mActivePointerId == INVALID_POINTER) {
                     Log.e(LOG_TAG,
                             "Got ACTION_MOVE event but don't have an active pointer id.");
@@ -671,11 +684,12 @@ public class SuperSwipeRefreshLayout extends ViewGroup {
                 }
                 
                 
-                 //by lichaomeng 为了在水平滑动中禁止自身滑动,交给子类处理,如ListView中的条目侧滑菜单的展示
+               //by lichaomeng 为了在水平滑动中禁止自身滑动,交给子类处理,如ListView中的条目侧滑菜单的展示
                 float gap = startx - ev.getRawX();
                 if (Math.abs(gap) > 20 || Math.abs(getScrollX()) > 20) {
-                   return false;
-
+                    //得加个标记记住,防止横滑>竖滑>横滑回来,刷新界面突然蹦出来,
+                    Xscrolled = true;
+                    return false;
                 }
                 
                 
